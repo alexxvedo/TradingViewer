@@ -5,11 +5,15 @@ echo ========================================
 echo.
 
 REM Verificar si Python está instalado
-python --version >nul 2>&1
+uv python --version >nul 2>&1
 if errorlevel 1 (
-    echo Error: Python no está instalado o no está en el PATH
-    pause
-    exit /b 1
+    echo Python no encontrado, intentando con python global...
+    python --version >nul 2>&1
+    if errorlevel 1 (
+        echo Error: Python no está instalado o no está en el PATH
+        pause
+        exit /b 1
+    )
 )
 
 REM Verificar si uv está instalado
@@ -26,10 +30,19 @@ echo [2/5] Activando entorno virtual...
 call .venv\Scripts\activate.bat
 
 echo [3/5] Instalando dependencias...
-uv pip install -e .
+uv pip install PySide6 MetaTrader5 watchdog psutil pyinstaller
 
 echo [4/5] Construyendo ejecutable con PyInstaller...
-pyinstaller ^
+
+REM Verificar que PyInstaller esté instalado
+uv run pyinstaller --version >nul 2>&1
+if errorlevel 1 (
+    echo Error: PyInstaller no está instalado correctamente
+    echo Intentando reinstalar PyInstaller...
+    uv pip install --force-reinstall pyinstaller
+)
+
+uv run pyinstaller ^
     --onefile ^
     --windowed ^
     --name "TradingViewer" ^
@@ -42,8 +55,14 @@ pyinstaller ^
 
 if errorlevel 1 (
     echo Error: Falló la construcción con PyInstaller
-    pause
-    exit /b 1
+    echo.
+    echo Intentando construcción alternativa...
+    uv run pyinstaller --onefile --name "TradingViewer" launcher.py
+    if errorlevel 1 (
+        echo Error: Falló la construcción alternativa
+        pause
+        exit /b 1
+    )
 )
 
 echo [5/5] Copiando archivos adicionales...
@@ -56,10 +75,10 @@ echo ========================================
 echo  BUILD COMPLETADO EXITOSAMENTE
 echo ========================================
 echo.
-echo Ejecutable creado en: dist\MT5PortableLauncher.exe
+echo Ejecutable creado en: dist\TradingViewer.exe
 echo.
 echo Para distribuir, copia toda la carpeta 'dist' que contiene:
-echo - MT5PortableLauncher.exe (ejecutable principal)
+echo - TradingViewer.exe (ejecutable principal)
 echo - config.json (archivo de configuración)
 echo.
 echo Presiona cualquier tecla para abrir la carpeta dist...
@@ -70,7 +89,7 @@ echo.
 echo ¿Deseas ejecutar el launcher ahora? (S/N)
 set /p choice=
 if /i "%choice%"=="S" (
-    start "" "dist\MT5PortableLauncher.exe"
+    start "" "dist\TradingViewer.exe"
 )
 
 echo.

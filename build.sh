@@ -17,7 +17,7 @@ echo "[3/5] Instalando dependencias..."
 uv pip install -e .
 
 echo "[4/5] Construyendo ejecutable con PyInstaller..."
-pyinstaller \
+uv run pyinstaller \
     --onefile \
     --windowed \
     --name "TradingViewer" \
@@ -30,7 +30,12 @@ pyinstaller \
 
 if [ $? -ne 0 ]; then
     echo "Error: Falló la construcción con PyInstaller"
-    exit 1
+    echo "Intentando construcción alternativa..."
+    uv run pyinstaller --onefile --name "TradingViewer" launcher.py
+    if [ $? -ne 0 ]; then
+        echo "Error: Falló la construcción alternativa"
+        exit 1
+    fi
 fi
 
 echo "[5/5] Copiando archivos adicionales..."
@@ -43,20 +48,20 @@ echo "========================================"
 echo "  BUILD COMPLETADO EXITOSAMENTE"
 echo "========================================"
 echo
-echo "Ejecutable creado en: dist/MT5PortableLauncher"
+echo "Ejecutable creado en: dist/TradingViewer"
 echo
 echo "Para distribuir, copia toda la carpeta 'dist' que contiene:"
-echo "- MT5PortableLauncher (ejecutable principal)"
+echo "- TradingViewer (ejecutable principal)"
 echo "- config.json (archivo de configuración)"
 echo
 
 # Hacer ejecutable el archivo generado
-chmod +x dist/MT5PortableLauncher
+chmod +x dist/TradingViewer
 
 echo "¿Deseas ejecutar el launcher ahora? (s/N)"
 read -r choice
 if [[ "$choice" =~ ^[Ss]$ ]]; then
-    ./dist/MT5PortableLauncher &
+    ./dist/TradingViewer &
 fi
 
 echo
