@@ -4,24 +4,6 @@ echo  MT5 Portable Launcher - Build Script
 echo ========================================
 echo.
 
-REM Verificar si Python está instalado
-uv python --version >nul 2>&1
-if errorlevel 1 (
-    echo Python no encontrado, intentando con python global...
-    python --version >nul 2>&1
-    if errorlevel 1 (
-        echo Error: Python no está instalado o no está en el PATH
-        pause
-        exit /b 1
-    )
-)
-
-REM Verificar si uv está instalado
-uv --version >nul 2>&1
-if errorlevel 1 (
-    echo Instalando uv...
-    pip install uv
-)
 
 echo [1/5] Creando entorno virtual...
 uv venv
