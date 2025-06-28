@@ -5,17 +5,7 @@ echo "  MT5 Portable Launcher - Build Script"
 echo "========================================"
 echo
 
-# Verificar si Python está instalado
-if ! command -v python3 &> /dev/null; then
-    echo "Error: Python 3 no está instalado"
-    exit 1
-fi
 
-# Verificar si uv está instalado
-if ! command -v uv &> /dev/null; then
-    echo "Instalando uv..."
-    pip3 install uv
-fi
 
 echo "[1/5] Creando entorno virtual..."
 uv venv
