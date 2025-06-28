@@ -22,15 +22,29 @@ from PySide6.QtWidgets import (
     QTabWidget, QTableWidget, QTableWidgetItem, QPushButton, QLabel,
     QTextEdit, QGroupBox, QGridLayout, QCheckBox, QSpinBox, QLineEdit,
     QFileDialog, QMessageBox, QHeaderView, QSplitter, QStatusBar,
-    QProgressBar, QComboBox, QTreeWidget, QTreeWidgetItem
+    QProgressBar, QComboBox, QTreeWidget, QTreeWidgetItem, QFrame,
+    QScrollArea, QGraphicsDropShadowEffect
 )
 from PySide6.QtCore import (
-    QTimer, QThread, Signal, Qt, QSize, QSettings
+    QTimer, QThread, Signal, Qt, QSize, QSettings, QPropertyAnimation,
+    QEasingCurve, QRect
 )
-from PySide6.QtGui import QFont, QIcon, QPixmap, QAction
+from PySide6.QtGui import QFont, QIcon, QPixmap, QAction, QColor, QPalette
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 import psutil
+
+# Importar estilos modernos
+try:
+    from modern_styles import (
+        apply_modern_dark_theme, 
+        get_card_style, 
+        get_metric_card_style,
+        get_glow_effect_style
+    )
+    MODERN_STYLES_AVAILABLE = True
+except ImportError:
+    MODERN_STYLES_AVAILABLE = False
 
 
 class ConfigWatcher(FileSystemEventHandler):
@@ -315,50 +329,27 @@ class MT5PortableLauncher(QMainWindow):
         self.update_timer.start(2000)  # Actualizar cada 2 segundos
     
     def setup_ui(self):
-        """Configura la interfaz de usuario"""
-        self.setWindowTitle("MT5 Portable Launcher v1.0")
-        self.setMinimumSize(1400, 900)
+        """Configura la interfaz de usuario moderna"""
+        self.setWindowTitle("🚀 TradingViewer - MT5 Portfolio Manager")
+        self.setMinimumSize(1600, 1000)
         
-        # Widget central
+        # Widget central con scroll
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
         
         # Layout principal
         main_layout = QVBoxLayout(central_widget)
+        main_layout.setSpacing(0)
+        main_layout.setContentsMargins(0, 0, 0, 0)
         
-        # Barra de herramientas
-        toolbar_layout = QHBoxLayout()
+        # Header moderno con gradiente
+        self.create_modern_header(main_layout)
         
-        self.start_all_btn = QPushButton("▶ Iniciar Todo")
-        self.start_all_btn.clicked.connect(self.start_all_workers)
-        self.start_all_btn.setStyleSheet("QPushButton { background-color: #4CAF50; color: white; font-weight: bold; }")
-        toolbar_layout.addWidget(self.start_all_btn)
+        # Área de métricas principales
+        self.create_metrics_dashboard(main_layout)
         
-        self.stop_all_btn = QPushButton("⏹ Detener Todo")
-        self.stop_all_btn.clicked.connect(self.stop_all_workers)
-        self.stop_all_btn.setStyleSheet("QPushButton { background-color: #f44336; color: white; font-weight: bold; }")
-        toolbar_layout.addWidget(self.stop_all_btn)
-        
-        self.reload_config_btn = QPushButton("🔄 Recargar Config")
-        self.reload_config_btn.clicked.connect(self.load_config)
-        toolbar_layout.addWidget(self.reload_config_btn)
-        
-        self.edit_config_btn = QPushButton("✏ Editar Config")
-        self.edit_config_btn.clicked.connect(self.edit_config)
-        toolbar_layout.addWidget(self.edit_config_btn)
-        
-        self.cleanup_btn = QPushButton("🧹 Limpiar Temporales")
-        self.cleanup_btn.clicked.connect(self.cleanup_all_temp_dirs)
-        toolbar_layout.addWidget(self.cleanup_btn)
-        
-        toolbar_layout.addStretch()
-        
-        # Indicador de cuentas activas
-        self.accounts_status_label = QLabel("Cuentas: 0/0 activas")
-        self.accounts_status_label.setStyleSheet("QLabel { font-weight: bold; color: #2196F3; }")
-        toolbar_layout.addWidget(self.accounts_status_label)
-        
-        main_layout.addLayout(toolbar_layout)
+        # Barra de herramientas moderna
+        self.create_modern_toolbar(main_layout)
         
         # Tabs principales
         self.tab_widget = QTabWidget()
@@ -380,10 +371,13 @@ class MT5PortableLauncher(QMainWindow):
         self.logs_tab = self.create_logs_tab()
         self.tab_widget.addTab(self.logs_tab, "📋 Logs")
         
-        # Barra de estado
+        # Barra de estado moderna
         self.status_bar = QStatusBar()
         self.setStatusBar(self.status_bar)
-        self.status_bar.showMessage("Listo - Launcher Portable MT5")
+        self.status_bar.showMessage("🟢 Sistema listo - Configuración cargada")
+        
+        # Aplicar tema moderno
+        self.apply_modern_theme()
     
     def create_accounts_tab(self) -> QWidget:
         """Crea el tab de cuentas"""
@@ -491,6 +485,247 @@ class MT5PortableLauncher(QMainWindow):
         layout.addLayout(logs_buttons_layout)
         
         return widget
+    
+    def create_modern_header(self, main_layout):
+        """Crea el header moderno con título y logo"""
+        header_frame = QFrame()
+        header_frame.setObjectName("toolbar")
+        header_frame.setFixedHeight(80)
+        
+        header_layout = QHBoxLayout(header_frame)
+        header_layout.setContentsMargins(20, 10, 20, 10)
+        
+        # Título principal con icono
+        title_layout = QVBoxLayout()
+        title_label = QLabel("🚀 TradingViewer")
+        title_label.setObjectName("titleLabel")
+        subtitle_label = QLabel("Gestor de Cuentas MetaTrader 5")
+        subtitle_label.setStyleSheet("color: #a0aec0; font-size: 12px;")
+        
+        title_layout.addWidget(title_label)
+        title_layout.addWidget(subtitle_label)
+        title_layout.addStretch()
+        
+        header_layout.addLayout(title_layout)
+        header_layout.addStretch()
+        
+        # Indicador de estado global
+        self.global_status_label = QLabel("🔴 Desconectado")
+        self.global_status_label.setObjectName("statusLabel")
+        header_layout.addWidget(self.global_status_label)
+        
+        main_layout.addWidget(header_frame)
+    
+    def create_metrics_dashboard(self, main_layout):
+        """Crea el dashboard de métricas principales"""
+        metrics_frame = QFrame()
+        metrics_layout = QHBoxLayout(metrics_frame)
+        metrics_layout.setContentsMargins(20, 10, 20, 10)
+        metrics_layout.setSpacing(15)
+        
+        # Métricas principales en cards
+        self.total_balance_card = self.create_metric_card("💰 Balance Total", "$0.00", "#48bb78")
+        self.total_equity_card = self.create_metric_card("📊 Equity Total", "$0.00", "#4299e1")
+        self.total_profit_card = self.create_metric_card("📈 P&L Total", "$0.00", "#ed8936")
+        self.active_accounts_card = self.create_metric_card("🔗 Cuentas Activas", "0/0", "#9f7aea")
+        
+        metrics_layout.addWidget(self.total_balance_card)
+        metrics_layout.addWidget(self.total_equity_card)
+        metrics_layout.addWidget(self.total_profit_card)
+        metrics_layout.addWidget(self.active_accounts_card)
+        
+        main_layout.addWidget(metrics_frame)
+    
+    def create_metric_card(self, title, value, color):
+        """Crea una tarjeta de métrica moderna"""
+        card = QFrame()
+        card.setStyleSheet(get_metric_card_style(color) if MODERN_STYLES_AVAILABLE else f"""
+            QFrame {{
+                background: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 1,
+                                            stop: 0 rgba(45, 55, 72, 0.95), 
+                                            stop: 1 rgba(26, 32, 44, 0.95));
+                border: 2px solid {color};
+                border-radius: 12px;
+                padding: 16px;
+                margin: 8px;
+            }}
+        """)
+        card.setFixedHeight(100)
+        
+        layout = QVBoxLayout(card)
+        layout.setContentsMargins(15, 10, 15, 10)
+        
+        title_label = QLabel(title)
+        title_label.setStyleSheet(f"color: {color}; font-size: 12px; font-weight: bold;")
+        
+        value_label = QLabel(value)
+        value_label.setStyleSheet("color: white; font-size: 24px; font-weight: bold;")
+        value_label.setObjectName("valueLabel")
+        
+        layout.addWidget(title_label)
+        layout.addWidget(value_label)
+        layout.addStretch()
+        
+        # Agregar efecto de sombra
+        shadow = QGraphicsDropShadowEffect()
+        shadow.setBlurRadius(15)
+        shadow.setColor(QColor(0, 0, 0, 80))
+        shadow.setOffset(0, 3)
+        card.setGraphicsEffect(shadow)
+        
+        return card
+    
+    def create_modern_toolbar(self, main_layout):
+        """Crea la barra de herramientas moderna"""
+        toolbar_frame = QFrame()
+        toolbar_layout = QHBoxLayout(toolbar_frame)
+        toolbar_layout.setContentsMargins(20, 10, 20, 10)
+        toolbar_layout.setSpacing(15)
+        
+        # Botones principales con iconos y estilos
+        self.start_all_btn = QPushButton("▶ Iniciar Todo")
+        self.start_all_btn.setObjectName("startButton")
+        self.start_all_btn.clicked.connect(self.start_all_workers)
+        
+        self.stop_all_btn = QPushButton("⏹ Detener Todo")
+        self.stop_all_btn.setObjectName("stopButton")
+        self.stop_all_btn.clicked.connect(self.stop_all_workers)
+        
+        self.reload_config_btn = QPushButton("🔄 Recargar")
+        self.reload_config_btn.setObjectName("reloadButton")
+        self.reload_config_btn.clicked.connect(self.load_config)
+        
+        self.edit_config_btn = QPushButton("✏ Editar Config")
+        self.edit_config_btn.clicked.connect(self.edit_config)
+        
+        self.cleanup_btn = QPushButton("🧹 Limpiar")
+        self.cleanup_btn.setObjectName("cleanupButton")
+        self.cleanup_btn.clicked.connect(self.cleanup_all_temp_dirs)
+        
+        # Agregar botones a la toolbar
+        toolbar_layout.addWidget(self.start_all_btn)
+        toolbar_layout.addWidget(self.stop_all_btn)
+        toolbar_layout.addWidget(self.reload_config_btn)
+        toolbar_layout.addWidget(self.edit_config_btn)
+        toolbar_layout.addWidget(self.cleanup_btn)
+        
+        toolbar_layout.addStretch()
+        
+        # Indicador de cuentas activas
+        self.accounts_status_label = QLabel("Cuentas: 0/0 activas")
+        self.accounts_status_label.setObjectName("statusLabel")
+        toolbar_layout.addWidget(self.accounts_status_label)
+        
+        main_layout.addWidget(toolbar_frame)
+    
+    def apply_modern_theme(self):
+        """Aplica el tema moderno a la aplicación"""
+        if MODERN_STYLES_AVAILABLE:
+            apply_modern_dark_theme(self)
+        else:
+            # Fallback al estilo básico mejorado
+            self.setStyleSheet("""
+                QMainWindow {
+                    background: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 1,
+                                                stop: 0 #1a1a2e, stop: 1 #16213e);
+                    color: #ffffff;
+                    font-family: 'Segoe UI', Arial, sans-serif;
+                }
+                QPushButton {
+                    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                                stop: 0 #4299e1, stop: 1 #3182ce);
+                    color: white;
+                    border: none;
+                    padding: 12px 24px;
+                    border-radius: 8px;
+                    font-weight: bold;
+                    min-width: 120px;
+                }
+                QPushButton:hover {
+                    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                                stop: 0 #63b3ed, stop: 1 #4299e1);
+                }
+                QTabWidget::pane {
+                    border: 1px solid #4a5568;
+                    background: rgba(45, 55, 72, 0.95);
+                    border-radius: 8px;
+                }
+                QTabBar::tab {
+                    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                                stop: 0 #2d3748, stop: 1 #1a202c);
+                    color: #a0aec0;
+                    padding: 12px 20px;
+                    border-top-left-radius: 8px;
+                    border-top-right-radius: 8px;
+                    min-width: 100px;
+                }
+                QTabBar::tab:selected {
+                    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                                stop: 0 #4299e1, stop: 1 #3182ce);
+                    color: white;
+                    font-weight: bold;
+                }
+                QTableWidget {
+                    background: rgba(26, 32, 44, 0.95);
+                    alternate-background-color: rgba(45, 55, 72, 0.5);
+                    gridline-color: #4a5568;
+                    border: 1px solid #4a5568;
+                    border-radius: 8px;
+                }
+                QTextEdit {
+                    background: rgba(26, 32, 44, 0.95);
+                    color: #e2e8f0;
+                    border: 1px solid #4a5568;
+                    border-radius: 8px;
+                    padding: 10px;
+                }
+                QLabel#titleLabel {
+                    font-size: 16px;
+                    font-weight: bold;
+                    color: #4299e1;
+                    padding: 5px;
+                }
+                QLabel#statusLabel {
+                    font-size: 12px;
+                    font-weight: bold;
+                    color: #4299e1;
+                    padding: 5px 10px;
+                    background: rgba(66, 153, 225, 0.1);
+                    border-radius: 4px;
+                }
+                QPushButton#startButton {
+                    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                                stop: 0 #48bb78, stop: 1 #38a169);
+                }
+                QPushButton#startButton:hover {
+                    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                                stop: 0 #68d391, stop: 1 #48bb78);
+                }
+                QPushButton#stopButton {
+                    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                                stop: 0 #f56565, stop: 1 #e53e3e);
+                }
+                QPushButton#stopButton:hover {
+                    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                                stop: 0 #fc8181, stop: 1 #f56565);
+                }
+                QPushButton#reloadButton {
+                    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                                stop: 0 #ed8936, stop: 1 #dd6b20);
+                }
+                QPushButton#reloadButton:hover {
+                    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                                stop: 0 #fbb040, stop: 1 #ed8936);
+                }
+                QPushButton#cleanupButton {
+                    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                                stop: 0 #9f7aea, stop: 1 #805ad5);
+                }
+                QPushButton#cleanupButton:hover {
+                    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                                stop: 0 #b794f6, stop: 1 #9f7aea);
+                }
+            """)
     
     def setup_config_watcher(self):
         """Configura el monitor de cambios en config.json"""
@@ -742,22 +977,74 @@ class MT5PortableLauncher(QMainWindow):
         print(formatted_message)  # También imprimir en consola
     
     def update_ui(self):
-        """Actualiza la interfaz de usuario"""
+        """Actualiza la interfaz de usuario moderna"""
         self.update_accounts_table()
         self.update_positions_table()
         self.update_temp_dirs_tree()
         
-        # Actualizar contador de cuentas activas
-        running_count = sum(1 for w in self.workers.values() if w.is_running())
+        # Calcular totales para las métricas
+        total_balance = 0
+        total_equity = 0
+        total_profit = 0
+        running_count = 0
         total_count = len(self.workers)
+        
+        for worker in self.workers.values():
+            if worker.is_running():
+                running_count += 1
+            
+            data = worker.get_data_from_db()
+            account_info = data.get('account_info', {})
+            total_balance += account_info.get('balance', 0)
+            total_equity += account_info.get('equity', 0)
+            total_profit += account_info.get('profit', 0)
+        
+        # Actualizar las tarjetas de métricas
+        self.update_metric_card(self.total_balance_card, f"${total_balance:,.2f}")
+        self.update_metric_card(self.total_equity_card, f"${total_equity:,.2f}")
+        
+        # Color del profit según sea positivo o negativo
+        profit_color = "#48bb78" if total_profit >= 0 else "#f56565"
+        self.update_metric_card(self.total_profit_card, f"${total_profit:,.2f}", profit_color)
+        self.update_metric_card(self.active_accounts_card, f"{running_count}/{total_count}")
+        
+        # Actualizar contador de cuentas activas en toolbar
         self.accounts_status_label.setText(f"Cuentas: {running_count}/{total_count} activas")
+        
+        # Actualizar estado global
+        if running_count > 0:
+            self.global_status_label.setText(f"🟢 {running_count} Cuenta(s) Conectada(s)")
+            self.global_status_label.setObjectName("connectedStatus")
+        else:
+            self.global_status_label.setText("🔴 Desconectado")
+            self.global_status_label.setObjectName("disconnectedStatus")
+        
+        # Reaplizar estilos al label de estado
+        self.global_status_label.style().unpolish(self.global_status_label)
+        self.global_status_label.style().polish(self.global_status_label)
         
         # Actualizar barra de estado
         temp_dirs_count = sum(1 for w in self.workers.values() if w.temp_dir)
-        self.status_bar.showMessage(
-            f"Cuentas: {running_count}/{total_count} ejecutándose | "
-            f"Directorios temporales: {temp_dirs_count}"
-        )
+        status_message = f"🟢 Sistema activo | Cuentas: {running_count}/{total_count} | Directorios: {temp_dirs_count}"
+        if total_profit != 0:
+            status_message += f" | P&L: ${total_profit:,.2f}"
+        
+        self.status_bar.showMessage(status_message)
+    
+    def update_metric_card(self, card, value, color=None):
+        """Actualiza el valor de una tarjeta de métrica"""
+        # Encontrar el label del valor en la tarjeta
+        for child in card.findChildren(QLabel):
+            if child.objectName() == "valueLabel":
+                child.setText(value)
+                if color:
+                    # Actualizar el color del borde de la tarjeta si se proporciona
+                    current_style = card.styleSheet()
+                    # Reemplazar el color del borde
+                    import re
+                    new_style = re.sub(r'border: 2px solid [^;]+;', f'border: 2px solid {color};', current_style)
+                    card.setStyleSheet(new_style)
+                break
     
     def closeEvent(self, event):
         """Maneja el cierre de la aplicación"""

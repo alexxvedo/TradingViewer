@@ -4,14 +4,17 @@ Un launcher de escritorio para gestionar múltiples cuentas de MetaTrader 5 en *
 
 ## 🚀 Características
 
-- **Gestión de múltiples cuentas MT5** en paralelo
-- **Modo portable** con carpetas temporales independientes
-- **Interfaz gráfica moderna** con PySide6
-- **Monitoreo en tiempo real** de posiciones y balances
-- **Ventanas MT5 ocultas** para operación silenciosa
-- **Empaquetado en un solo ejecutable** con PyInstaller
-- **Comunicación vía SQLite** entre launcher y workers
-- **Limpieza automática** de directorios temporales
+- **🎨 Interfaz Moderna**: Nueva UI con tema oscuro, gradientes y efectos visuales
+- **📊 Dashboard de Métricas**: Tarjetas interactivas con balance, equity y P&L en tiempo real
+- **🚀 Gestión Multi-Cuenta**: Maneja múltiples cuentas MT5 simultáneamente
+- **💫 Modo Portable**: Cada instancia MT5 se ejecuta en su propio directorio temporal
+- **🎯 Controles Intuitivos**: Botones con colores específicos y estados visuales
+- **🔄 Ventanas Ocultas**: MT5 se ejecuta en segundo plano sin ventanas visibles
+- **📈 Monitoreo Avanzado**: Dashboard con métricas principales y estado global
+- **⚡ Gestión de Procesos**: Control completo de inicio/parada de workers
+- **🔧 Configuración Dinámica**: Recarga automática al modificar config.json
+- **🧹 Limpieza Automática**: Gestión inteligente de directorios temporales
+- **📦 Empaquetado**: Compilación a ejecutable único con PyInstaller
 
 ## 📋 Requisitos
 
@@ -101,6 +104,39 @@ source .venv/bin/activate
 python launcher.py
 ```
 
+### 🎨 Nueva Interfaz Moderna
+
+La aplicación ahora cuenta con una **interfaz completamente renovada** con:
+
+#### 🌟 **Header Moderno**
+
+- Logo y título estilizado "🚀 TradingViewer"
+- Indicador de estado global en tiempo real
+- Diseño con gradientes y efectos visuales
+
+#### 📊 **Dashboard de Métricas**
+
+- **💰 Balance Total**: Suma de todos los balances de cuentas
+- **📊 Equity Total**: Equity consolidado en tiempo real
+- **📈 P&L Total**: Profit/Loss total con colores dinámicos
+- **🔗 Cuentas Activas**: Contador de cuentas conectadas
+
+#### 🎯 **Barra de Herramientas Moderna**
+
+- **▶ Iniciar Todo**: Botón verde para iniciar todos los workers
+- **⏹ Detener Todo**: Botón rojo para detener todas las conexiones
+- **🔄 Recargar**: Botón naranja para recargar configuración
+- **✏ Editar Config**: Acceso rápido al archivo de configuración
+- **🧹 Limpiar**: Botón morado para limpieza de temporales
+
+#### 🎨 **Tema Visual**
+
+- **Tema oscuro** con gradientes azul-violeta
+- **Efectos de sombra** en las tarjetas de métricas
+- **Colores específicos** para cada tipo de acción
+- **Tipografía moderna** con fuentes system (Segoe UI)
+- **Animaciones hover** en botones y elementos interactivos
+
 ### 2. Funcionalidades principales
 
 #### 📊 **Tab Cuentas**
@@ -185,6 +221,31 @@ C:\Users\Usuario\AppData\Local\Temp\mt5_123456_xyz123\
     ├── mt5_data_123456.db  # Base de datos SQLite
     └── [archivos MT5]      # Archivos temporales de MT5
 ```
+
+## 🧪 Probar la Nueva Interfaz
+
+Para ver la nueva interfaz moderna:
+
+```bash
+# 1. Instalar dependencias
+install_deps.bat
+
+# 2. Ejecutar la aplicación
+run.bat
+# o directamente
+uv run python launcher.py
+```
+
+### 🎨 Vista Previa de la Interfaz
+
+La nueva interfaz incluye:
+
+- **🌈 Gradientes modernos** en fondo y elementos
+- **💫 Efectos de sombra** en las tarjetas de métricas
+- **🎯 Colores semánticos**: Verde (start), Rojo (stop), Naranja (reload), etc.
+- **📱 Diseño responsive** que se adapta al tamaño de ventana
+- **⚡ Actualizaciones en tiempo real** de todas las métricas
+- **🔄 Indicadores de estado** visuales y dinámicos
 
 ## 📦 Empaquetado con PyInstaller
 
