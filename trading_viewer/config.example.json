@@ -1,0 +1,29 @@
+{
+  "accounts": [
+    {
+      "platform": "mt4",
+      "login": "12345678",
+      "password": "your_password",
+      "server": "broker-server.com:443",
+      "terminalPath": "C:\\Program Files\\MetaTrader 4\\terminal.exe",
+      "status": "stopped"
+    },
+    {
+      "platform": "mt5",
+      "login": "87654321",
+      "password": "your_password",
+      "server": "broker-server5.com:443",
+      "terminalPath": "C:\\Program Files\\MetaTrader 5\\terminal64.exe",
+      "status": "stopped"
+    }
+  ],
+  "server": {
+    "port": 3001,
+    "host": "127.0.0.1"
+  },
+  "app": {
+    "updateInterval": 5,
+    "enableDebug": true,
+    "autoStart": false
+  }
+}
